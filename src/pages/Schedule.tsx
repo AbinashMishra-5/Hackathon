@@ -2,11 +2,38 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Plus, Sparkles, ArrowUpRight, TrendingUp, GraduationCap } from "lucide-react";
+import { 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Users, 
+  Plus, 
+  Sparkles, 
+  ArrowUpRight, 
+  TrendingUp, 
+  GraduationCap 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// TypeScript interfaces for better type safety
+interface ScheduleItem {
+  id: number;
+  time: string;
+  subject: string;
+  teacher: string;
+  room: string;
+  grade: string;
+  type: "Class" | "Lab" | "Meeting" | "Event";
+}
+
+interface WeekOverview {
+  day: string;
+  classes: number;
+  events: number;
+}
+
 const Schedule = () => {
-  const todaySchedule = [
+  const todaySchedule: ScheduleItem[] = [
     {
       id: 1,
       time: "09:00 - 10:00",
@@ -54,7 +81,7 @@ const Schedule = () => {
     },
   ];
 
-  const weekSchedule = [
+  const weekSchedule: WeekOverview[] = [
     { day: "Monday", classes: 8, events: 2 },
     { day: "Tuesday", classes: 7, events: 1 },
     { day: "Wednesday", classes: 9, events: 3 },
@@ -62,22 +89,19 @@ const Schedule = () => {
     { day: "Friday", classes: 8, events: 2 },
   ];
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "Class":
-        return "bg-blue-100 text-blue-800";
-      case "Lab":
-        return "bg-green-100 text-green-800";
-      case "Meeting":
-        return "bg-purple-100 text-purple-800";
-      case "Event":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  // Utility function for getting type-specific colors with proper typing
+  const getTypeColor = (type: ScheduleItem['type']): string => {
+    const colorMap: Record<ScheduleItem['type'], string> = {
+      "Class": "bg-blue-100 text-blue-800",
+      "Lab": "bg-green-100 text-green-800",
+      "Meeting": "bg-purple-100 text-purple-800",
+      "Event": "bg-orange-100 text-orange-800",
+    };
+    return colorMap[type] || "bg-gray-100 text-gray-800";
   };
 
-  const getCurrentDate = () => {
+  // Memoized current date to avoid unnecessary recalculations
+  const getCurrentDate = (): string => {
     return new Date().toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',

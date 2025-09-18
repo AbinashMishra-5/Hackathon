@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -11,16 +11,55 @@ import {
   Users,
   X,
   Sparkles,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
-  { name: "Students", href: "/students", icon: Users },
-  { name: "Classes", href: "/classes", icon: BookOpen },
-  { name: "Schedule", href: "/schedule", icon: Calendar },
-  { name: "Teachers", href: "/teachers", icon: GraduationCap },
-  { name: "Settings", href: "/settings", icon: Settings },
+// Navigation configuration with proper TypeScript typing
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  description?: string;
+}
+
+const navigation: NavigationItem[] = [
+  { 
+    name: "Dashboard", 
+    href: "/", 
+    icon: Home, 
+    description: "Overview and analytics" 
+  },
+  { 
+    name: "Students", 
+    href: "/students", 
+    icon: Users, 
+    description: "Student management" 
+  },
+  { 
+    name: "Classes", 
+    href: "/classes", 
+    icon: BookOpen, 
+    description: "Class schedules" 
+  },
+  { 
+    name: "Schedule", 
+    href: "/schedule", 
+    icon: Calendar, 
+    description: "Events and timetable" 
+  },
+  { 
+    name: "Teachers", 
+    href: "/teachers", 
+    icon: GraduationCap, 
+    description: "Faculty management" 
+  },
+  { 
+    name: "Settings", 
+    href: "/settings", 
+    icon: Settings, 
+    description: "System configuration" 
+  },
 ];
 
 interface LayoutProps {
@@ -32,9 +71,26 @@ export default function Layout({ children }: LayoutProps) {
   const [mounted, setMounted] = useState(false);
   const location = useLocation();
 
+  // Memoized callback for closing sidebar
+  const closeSidebar = useCallback(() => {
+    setSidebarOpen(false);
+  }, []);
+
+  const openSidebar = useCallback(() => {
+    setSidebarOpen(true);
+  }, []);
+
+  // Handle component mounting for smooth transitions
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    if (sidebarOpen) {
+      closeSidebar();
+    }
+  }, [location.pathname, sidebarOpen, closeSidebar]);
 
   return (
     <div className="h-screen flex overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative">
@@ -42,9 +98,21 @@ export default function Layout({ children }: LayoutProps) {
       <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 via-purple-100/20 to-pink-100/20 animate-pulse" />
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-purple-600/10 rounded-full blur-3xl floating" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-400/10 to-cyan-600/10 rounded-full blur-3xl floating" style={{ animationDelay: '1s' }} />
-      {/* Mobile menu */}
-      <div className={cn("fixed inset-0 flex z-40 md:hidden transition-all duration-300", !sidebarOpen && "opacity-0 pointer-events-none")}>
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+      {/* Mobile menu overlay */}
+      <div 
+        className={cn(
+          "fixed inset-0 flex z-40 md:hidden transition-all duration-300", 
+          !sidebarOpen && "opacity-0 pointer-events-none"
+        )}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation menu"
+      >
+        <div 
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm" 
+          onClick={closeSidebar}
+          aria-label="Close navigation menu" 
+        />
         
         <div className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 glass-effect rounded-r-3xl border-r border-white/20 shadow-2xl">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
@@ -52,7 +120,8 @@ export default function Layout({ children }: LayoutProps) {
               variant="ghost"
               size="sm"
               className="ml-1 flex items-center justify-center h-10 w-10 rounded-full glass-dark hover:bg-white/20 transition-all duration-300"
-              onClick={() => setSidebarOpen(false)}
+              onClick={closeSidebar}
+              aria-label="Close navigation menu"
             >
               <X className="h-6 w-6 text-white" />
             </Button>
@@ -80,7 +149,7 @@ export default function Layout({ children }: LayoutProps) {
                         ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg active"
                         : "text-gray-600 hover:text-indigo-700"
                     )}
-                    onClick={() => setSidebarOpen(false)}
+                    onClick={closeSidebar}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <item.icon className={cn(
@@ -146,7 +215,8 @@ export default function Layout({ children }: LayoutProps) {
             variant="ghost"
             size="sm"
             className="-ml-0.5 -mt-0.5 h-12 w-12 modern-button"
-            onClick={() => setSidebarOpen(true)}
+            onClick={openSidebar}
+            aria-label="Open navigation menu"
           >
             <Menu className="h-6 w-6" />
           </Button>
